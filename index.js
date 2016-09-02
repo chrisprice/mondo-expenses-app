@@ -1,6 +1,5 @@
 'use strict';
 
-const port = 5000;
 const express = require('express');
 const Q = require('q');
 const session = require('express-session');
@@ -9,9 +8,21 @@ const querystring = require('querystring');
 const rp = require('request-promise');
 const argv = require('minimist')(process.argv.slice(2));
 const FileStore = require('session-file-store')(session);
-const app = express();
+const url = require('url');
 
-const redirectUrl = `http://localhost:${port}/auth`;
+let app = express();
+
+const secure = argv.secure || false;
+const hostname = argv.hostname || 'localhost';
+const privatePort = argv.port || 5000;
+const publicPort = secure ? 443 : privatePort;
+
+const redirectUrl = url.format({
+  protocol: secure ? 'https' : 'http',
+  hostname: hostname,
+  port: publicPort,
+  pathname: 'auth'
+});
 const loginUrl = 'https://auth.getmondo.co.uk/?' + querystring.stringify({
   'client_id': argv.clientId,
   'redirect_uri': redirectUrl,
@@ -104,7 +115,6 @@ app.use(session({
   saveUninitialized: true
 }));
 
-app.set('port', port);
 app.use(express.static(path.join(__dirname, '/node_modules')));
 
 app.set('views', path.join(__dirname, '/views'));
@@ -163,6 +173,4 @@ app.get('/', (request, response) => {
 
 });
 
-app.listen(port, () => {
-  console.log('Node app is running on port', port);
-});
+app.listen(privatePort, hostname, () => console.log(`Listening at http://${hostname}:${privatePort}/`));
