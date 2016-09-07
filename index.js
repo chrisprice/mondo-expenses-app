@@ -173,4 +173,4 @@ app.get('/', (request, response) => {
 
 });
 
-app.listen(privatePort, hostname, () => console.log(`Listening at http://${hostname}:${privatePort}/`));
+app.listen(privatePort, () => console.log(`Listening at http://0.0.0.0:${privatePort}/`));
