@@ -1,3 +1,5 @@
+FROM node:slim
+
 WORKDIR /app
 
 COPY package.json ./
