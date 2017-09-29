@@ -1,3 +1,5 @@
+export const ERROR = 'ERROR';
+
 export const promiseWrapper = (asyncFn) =>
 (dispatch, getState) => {
   asyncFn(dispatch, getState)
@@ -7,7 +9,7 @@ export const promiseWrapper = (asyncFn) =>
       }
     })
     .catch(error => dispatch({
-      type: 'ERROR',
+      type: ERROR,
       error
     }));
 };

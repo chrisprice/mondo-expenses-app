@@ -1,75 +1,132 @@
 import {
-  AUTH_COMPLETE,
   PERFORM_AUTH,
+  AUTH_COMPLETE,
+  AUTH_ERROR,
   FETCH_ACCOUNTS,
   ACCOUNTS_COMPLETE,
+  ACCOUNTS_ERROR,
   FETCH_TRANSACTIONS,
-  TRANSACTIONS_COMPLETE
+  TRANSACTIONS_COMPLETE,
+  TRANSACTIONS_ERROR
 } from './monzo';
 import {
-  SELECT_ACCOUNT
+  CLEAR_AUTH
 } from './other';
+import {
+  ERROR
+} from './util';
+import parseTransactions from './analysis/parseTransactions';
+import batchTransactions from './analysis/batchTransactions';
 
-export const loadState = () => ({
-  accessToken: localStorage.accessToken,
-  stateToken: localStorage.stateToken,
-});
+export const loadState = () => {
+  try {
+    return JSON.parse(sessionStorage.state);
+  } catch (e) {
+    return {
+      loading: []
+    };
+  }
+};
 
-const saveState = state => {
-  localStorage.accessToken = state.accessToken;
-  localStorage.stateToken = state.stateToken;
-  return state;
+export const saveState = state => {
+  sessionStorage.state = JSON.stringify(state);
 };
 
 export default (state, action) => {
+  console.log(state, action);
   switch (action.type) {
     case PERFORM_AUTH: {
       const { stateToken } = action;
-      return saveState({
+      return {
         ...state,
+        loading: [...state.loading, 'auth'],
         accessToken: null,
         stateToken: stateToken
-      });
+      };
     }
     case AUTH_COMPLETE: {
       const { accessToken } = action;
-      return saveState({
+      return {
         ...state,
+        loading: state.loading.filter(item => item !== 'auth'),
         accessToken,
         stateToken: null
-      });
+      };
+    }
+    case AUTH_ERROR: {
+      return {
+        ...state,
+        loading: state.loading.filter(item => item !== 'auth'),
+        stateToken: null
+      };
+    }
+    case CLEAR_AUTH: {
+      return {
+        ...state,
+        accessToken: null,
+        stateToken: null
+      };
     }
     case FETCH_ACCOUNTS: {
-      return state;
+      return {
+        ...state,
+        loading: [...state.loading, 'accounts']
+      };
     }
     case ACCOUNTS_COMPLETE: {
       const { accounts } = action;
       return {
         ...state,
+        loading: state.loading.filter(item => item !== 'accounts'),
         accounts
       };
     }
-    case FETCH_TRANSACTIONS: {
-      return state;
-    }
-    case TRANSACTIONS_COMPLETE: {
-      const { transactions } = action;
+    case ACCOUNTS_ERROR: {
       return {
         ...state,
-        transactions
+        loading: state.loading.filter(item => item !== 'accounts')
       };
     }
-    case SELECT_ACCOUNT: {
-      const { accountId } = action;
-      const { accounts } = state;
+    case FETCH_TRANSACTIONS: {
       return {
         ...state,
-        transactions: null,
-        selectedAccountId: accountId
+        loading: [...state.loading, 'transactions']
+      };
+    }
+    case TRANSACTIONS_COMPLETE: {
+      const { transactions, since } = action;
+      const expenses = parseTransactions(transactions);
+      const claims = [...batchTransactions(expenses)];
+      return {
+        ...state,
+        loading: state.loading.filter(item => item !== 'transactions'),
+        transactions,
+        since,
+        expenses,
+        claims
+      };
+    }
+    case TRANSACTIONS_ERROR: {
+      return {
+        ...state,
+        loading: state.loading.filter(item => item !== 'transactions')
+      };
+    }
+    case ERROR: {
+      const { error } = action;
+      if (error.status === 401) {
+        console.log('logout');
+        return {
+          ...state,
+          accessToken: null
+        };
+      }
+      return {
+        ...state,
+        error
       };
     }
     default:
-      console.log(state, action);
-      return state;
+    return state;
   }
 };

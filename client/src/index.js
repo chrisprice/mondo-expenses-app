@@ -6,29 +6,24 @@ import thunk from 'redux-thunk';
 import { BrowserRouter, Route } from 'react-router-dom';
 import './index.css';
 import 'ace-css/css/ace.min.css';
+import Container from './chrome/Container';
 import App from './App';
 import Auth from './Auth';
-import Home from './home/Home';
-import Summary from './summary/Summary';
 import Claim from './claim/Claim';
-import Container from './chrome/Container';
-import reducer, { loadState } from './reducer';
-// import registerServiceWorker from './registerServiceWorker';
+import reducer, { loadState, saveState } from './reducer';
 
 const store = createStore(reducer, loadState(), applyMiddleware(thunk));
+store.subscribe(() => saveState(store.getState()));
 
 ReactDOM.render(
   <Provider store={store}>
-    <BrowserRouter >
+    <BrowserRouter>
       <Container>
-        <Home/>
-        <Summary/>
-        <Claim/>
-        {/* <Route exact path="/" component={App} />
-        <Route path="/auth" component={Auth} /> */}
+        <Route exact path="/" component={App} />
+        <Route path="/auth" component={Auth} />
+        <Route path="/claim/:id" component={Claim} />
       </Container>
     </BrowserRouter>
   </Provider>,
   document.getElementById('root')
 );
-// registerServiceWorker();

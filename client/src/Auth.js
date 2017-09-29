@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { Redirect } from 'react-router-dom';
 import { parse as parseQueryString } from 'querystring';
 import { authCallback } from './monzo';
 
@@ -12,9 +13,7 @@ class Auth extends Component {
   }
 
   render() {
-    return (
-      <div>Auth in progress</div>
-    );
+    return <Redirect to="/"/>;
   }
 }
 

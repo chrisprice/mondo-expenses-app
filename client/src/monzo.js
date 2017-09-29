@@ -1,6 +1,7 @@
 import MonzoApi from 'monzo-api';
-import { selectAccount } from './other';
 import { promiseWrapper, startOfMonth } from './util';
+
+const PAGE_LIMIT = 100;
 
 const {
   REACT_APP_MONZO_CLIENT_ID: clientId,
@@ -11,10 +12,13 @@ monzo.redirectUrl = new URL('/auth', window.location).toString();
 
 export const PERFORM_AUTH = 'PERFORM_AUTH';
 export const AUTH_COMPLETE = 'AUTH_COMPLETE';
+export const AUTH_ERROR = 'AUTH_ERROR';
 export const FETCH_ACCOUNTS = 'FETCH_ACCOUNTS';
 export const ACCOUNTS_COMPLETE = 'ACCOUNTS_COMPLETE';
+export const ACCOUNTS_ERROR = 'ACCOUNTS_ERROR';
 export const FETCH_TRANSACTIONS = 'FETCH_TRANSACTIONS';
 export const TRANSACTIONS_COMPLETE = 'TRANSACTIONS_COMPLETE';
+export const TRANSACTIONS_ERROR = 'TRANSACTIONS_ERROR';
 
 
 export const performAuth = () =>
@@ -30,75 +34,96 @@ export const performAuth = () =>
 export const authCallback = ({ code, state }) =>
   promiseWrapper(async (dispatch, getState) => {
     const { stateToken } = getState();
-    const { access_token: accessToken } = await monzo.authenticate(code, state, stateToken);
-    dispatch({
-      type: AUTH_COMPLETE,
-      accessToken
-    });
+    try {
+      const { access_token: accessToken } = await monzo.authenticate(code, state, stateToken);
+      dispatch({
+        type: AUTH_COMPLETE,
+        accessToken
+      });
+    } catch (e) {
+      dispatch({
+        type: AUTH_COMPLETE
+      });
+      throw e;
+    }
     await fetchAccounts()(dispatch, getState);
   });
 
-export const fetchAccounts = () =>
-  promiseWrapper(async (dispatch, getState) => {
-    const { accessToken } = getState();
+const fetchAccounts = async (dispatch, getState) => {
+    const { accessToken, accounts } = getState();
+    if (accounts != null) {
+      return accounts;
+    }
     dispatch({
       type: FETCH_ACCOUNTS
     });
-    const { accounts } = await monzo.accounts(accessToken);
-    dispatch({
-      type: ACCOUNTS_COMPLETE,
-      accounts
-    });
-    // this is horrible
-    if (accounts.length > 0) {
-      await selectAccount({ accountId: accounts[0].id })(dispatch, getState);
+    try {
+      const { accounts } = await monzo.accounts(accessToken);
+      dispatch({
+        type: ACCOUNTS_COMPLETE,
+        accounts
+      });
+      return accounts;
+    } catch (e) {
+      dispatch({
+        type: ACCOUNTS_ERROR
+      });
+      throw e;
     }
-  });
+  };
 
-export const fetchTransactions = ({ accountId, since = startOfMonth(), before }) =>
+export const fetchPagedTransactions = async ({
+  limit = PAGE_LIMIT,
+  since,
+  before,
+  accountId,
+  accessToken
+}) => {
+  const query = { limit, since, before };
+  const { transactions: page } = await monzo.transactions(accountId, true, query, accessToken);
+  const next = page.length === 0 ? null : () => fetchPagedTransactions({
+    limit,
+    since: page[page.length - 1].id,
+    before,
+    accessToken,
+    accountId
+  });
+  return { page, next };
+};
+
+export const fetchTransactions = (since) =>
   promiseWrapper(async (dispatch, getState) => {
-    const { accessToken } = getState();
+    const {
+      accessToken,
+      transactions: previousTransactions = [],
+      since: previousSince = new Date()
+    } = getState();
     dispatch({
       type: FETCH_TRANSACTIONS
     });
-    const query = { limit: 100 };
-    if (since != null) {
-      query.since = since instanceof Date ? since.toISOString() : since;
+    const transactions = [];
+    for (const account of await fetchAccounts(dispatch, getState)) {
+      const options = {
+        since,
+        before: previousSince,
+        accountId: account.id,
+        accessToken
+      };
+      try {
+        for (let { page, next } = await fetchPagedTransactions(options); next != null; { page, next } = await next()) {
+          transactions.push(...page);
+        }
+      } catch (e) {
+        dispatch({
+          type: TRANSACTIONS_ERROR
+        });
+        throw e;
+      }
     }
-    if (before != null) {
-      query.before = before.toISOString();
-    }
-    const { transactions } = await monzo.transactions(accountId, true, query, accessToken);
-    const expenseTransactions = transactions.filter(({ merchant }) => merchant != null)
-      .filter(({ category }) => category === 'expenses')
-      .map(({
-        id,
-        created,
-        settled,
-        merchant: { name, category },
-        amount,
-        currency,
-        local_amount: localAmount,
-        local_currency: localCurrency,
-        notes,
-        metadata,
-        attachments
-    }) => ({
-          id,
-          created: new Date(created),
-          settled: settled !== '',
-          merchant: name,
-          category,
-          amount,
-          currency,
-          localAmount: localCurrency !== currency ? localAmount : null,
-          localCurrency: localCurrency !== currency ? localCurrency : null,
-          notes,
-          metadata,
-          attachments
-        }));
+    transactions.sort((a, b) => new Date(b) - new Date(a));
     dispatch({
       type: TRANSACTIONS_COMPLETE,
-      transactions: expenseTransactions
+      since: since.toISOString(),
+      transactions: transactions.concat(previousTransactions)
     });
-  });
+  })

@@ -1,23 +1,15 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { performAuth } from './monzo';
-import Accounts from './Accounts';
-import Transactions from './Transactions';
+import Home from './home/Home';
+import Summary from './summary/Summary';
 
-const App = ({ authenticated, accountSelected, performAuth }) =>
-  authenticated ?
-    <div>
-      <Accounts />
-      {accountSelected &&
-        <Transactions />
-      }
-    </div> :
-    <button onClick={performAuth}>Login</button>;
+const App = ({ authenticated, performAuth }) =>
+  authenticated ? <Summary /> : <Home onSignIn={performAuth} />;
 
 export default connect(
-  ({ accessToken, selectedAccountId }) => ({
-    authenticated: accessToken != null,
-    accountSelected: selectedAccountId != null
+  ({ accessToken }) => ({
+    authenticated: accessToken != null
   }),
   { performAuth }
 )(App);

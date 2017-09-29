@@ -1,21 +1,61 @@
 import React from 'react';
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { clearAuth } from '../other';
+import withClaims from '../provider/withClaims';
 
-export default () =>
+const dateFormat = new Intl.DateTimeFormat('en-UK', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+
+const date = date => dateFormat.format(new Date(date));
+
+const MultipleAccountMessage = () =>
+  <p className="italic">Monzo is reporting that you have multiple accounts (check you out!). For now, I've assumed you'd like to pool your transactions across all of these accounts.</p>;
+
+const PendingClaim = ({ id, start, end, city, region, countryName, countryEmoji, transactions }) =>
+  <li className="m2">
+    <Link to={`/claim/${id}`} className="text-decoration-none">
+      <span className="inline-block mr2">{countryEmoji}</span>{[city, region, countryName].filter(item => item).join(', ')}
+    </Link>
+    <br />
+    <small className="inline-block ml4">{date(start)} - {date(end)}</small>
+  </li>;
+
+const Summary = ({ multipleAccounts, transactionCount = 0, expenseCount = 0, claims = [], archivedClaims = [], loadMore, clearAuth }) =>
   <section>
     <h1>Transactions Crunched</h1>
-    <p className="italic">Monzo is reporting that you have multiple accounts (check you out!). For now, I've assumed you'd like to pool your transactions across all of these accounts.</p>
-    <p>After looking over your last 3 months worth of transactions I've found 101 categorised as expenses. Of these 12 have receipts attached and 33 are currently marked as unclaimed.</p>
-    <p>I've therefore taken the liberty of grouping these into the following potential claims for you -</p>
-    <ul>
-      <li><a href="#">Wed 13th March 2017 - Friday 15th March 2017, Cambridge</a></li>
-      <li><a href="#">Wed 23th June 2017 - Friday 25th June 2017, Copenhagen</a></li>
+    {multipleAccounts && <MultipleAccountMessage />}
+    <p>After looking over your last {transactionCount} transactions I've found {expenseCount} categorised as expenses which I've taken the liberty of grouping into the following potential claims -</p>
+    <ul className="list-reset m3">
+      {
+        claims.map((claim, index) => <PendingClaim key={index} {...claim} />)
+      }
     </ul>
-    <p>In case my algorithms are on the fritz, I can also <a href="#">generate a monster claim</a> containing all of the above. You can then exclude irrelevant transactions to create a bespoke claim.</p>
-    <p>And just in case you need them, here are your previously claims -</p>
+    {/* <p>In case my algorithms are on the fritz, I can also <Link to={`/claim/monster`}>generate a monster claim</Link> containing all of the above. You can then exclude irrelevant transactions to create a bespoke claim.</p> */}
+    {/* <p>Just in case you need them, here are your previously claims -</p>
     <ul>
-      <li><a href="#">A fitting description, submitted Saturday 16th March 2016</a></li>
-      <li><a href="#">Another great description, submitted Friday 25th June 2016</a></li>
-    </ul>
-    <p className="">If you'd like, I can always <a href="#">go further back</a> through your transactions?</p>
-    <p className="my3 center"><button className="btn btn-outline not-rounded">Sign-out</button></p>
+      <li><Link to={`/claim/id`}>A fitting description, submitted Saturday 16th March 2016</Link></li>
+      <li><Link to={`/claim/id`}>Another great description, submitted Friday 25th June 2016</Link></li>
+    </ul> */}
+    <p className="">If you'd like, I can always go further back through your transactions to find more claims?</p>
+    <p className="my3">
+      <button className="btn btn-outline" onClick={loadMore}>Load More Transactions</button>
+      <button className="btn btn-outline ml3" onClick={clearAuth}>Sign-out</button>
+    </p>
   </section>;
+
+
+export default connect(
+  ({ accounts = [], selectedAccountId, transactions = [], expenses = [], claims }) => ({
+    multipleAccounts: accounts.length > 1,
+    selectedAccountId,
+    transactionCount: transactions.length,
+    expenseCount: expenses.length
+  }),
+  { clearAuth }
+)(withClaims(Summary));
+
