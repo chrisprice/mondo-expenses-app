@@ -46,7 +46,6 @@ export const authCallback = ({ code, state }) =>
       });
       throw e;
     }
-    await fetchAccounts()(dispatch, getState);
   });
 
 const fetchAccounts = async (dispatch, getState) => {

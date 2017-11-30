@@ -19,17 +19,20 @@ import parseTransactions from './analysis/parseTransactions';
 import batchTransactions from './analysis/batchTransactions';
 
 export const loadState = () => {
+  const defaultState = { loading: [] };
   try {
-    return JSON.parse(sessionStorage.state);
-  } catch (e) {
+    const loadedState = JSON.parse(localStorage.state);
     return {
-      loading: []
+      ...defaultState,
+      ...loadedState
     };
+  } catch (e) {
+    return defaultState;
   }
 };
 
-export const saveState = state => {
-  sessionStorage.state = JSON.stringify(state);
+export const saveState = ({ accessToken, stateToken }) => {
+  localStorage.state = JSON.stringify({ accessToken, stateToken });
 };
 
 export default (state, action) => {

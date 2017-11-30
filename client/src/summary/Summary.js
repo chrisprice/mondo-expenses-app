@@ -32,7 +32,8 @@ const Summary = ({ multipleAccounts, transactionCount = 0, expenseCount = 0, cla
     <p>After looking over your last {transactionCount} transactions I've found {expenseCount} categorised as expenses which I've taken the liberty of grouping into the following potential claims -</p>
     <ul className="list-reset m3">
       {
-        claims.map((claim, index) => <PendingClaim key={index} {...claim} />)
+        claims.sort((a, b) => new Date(b.start) - new Date(a.start))
+          .map((claim, index) => <PendingClaim key={index} {...claim} />)
       }
     </ul>
     {/* <p>In case my algorithms are on the fritz, I can also <Link to={`/claim/monster`}>generate a monster claim</Link> containing all of the above. You can then exclude irrelevant transactions to create a bespoke claim.</p> */}
@@ -50,7 +51,7 @@ const Summary = ({ multipleAccounts, transactionCount = 0, expenseCount = 0, cla
 
 
 export default connect(
-  ({ accounts = [], selectedAccountId, transactions = [], expenses = [], claims }) => ({
+  ({ accounts = [], selectedAccountId, transactions = [], expenses = [] }) => ({
     multipleAccounts: accounts.length > 1,
     selectedAccountId,
     transactionCount: transactions.length,

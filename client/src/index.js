@@ -10,6 +10,7 @@ import Container from './chrome/Container';
 import App from './App';
 import Auth from './Auth';
 import Claim from './claim/Claim';
+import Loading from './chrome/Loading';
 import reducer, { loadState, saveState } from './reducer';
 
 const store = createStore(reducer, loadState(), applyMiddleware(thunk));
@@ -22,6 +23,7 @@ ReactDOM.render(
         <Route exact path="/" component={App} />
         <Route path="/auth" component={Auth} />
         <Route path="/claim/:id" component={Claim} />
+        <Route path="/loading" component={Loading} />
       </Container>
     </BrowserRouter>
   </Provider>,

@@ -6,44 +6,44 @@ export default ({ name = "Chris Price", teamList = '', startDate = new Date(2017
     <div className="col-6 px1">
       <p>
         <label className="label" htmlFor="name">Name:</label>
-        <input className="input col-12 mb0" id="name" value={name} />
+        <input className="input col-12 mb0" id="name" defaultValue={name} />
+      </p>
+      <p>
+        <label className="label" htmlFor="submission-date">Form Submission Date:</label>
+        <input className="input col-12 mb0" id="submission-date" defaultValue={formatDate(submissionDate)} />
       </p>
       <p>
         <label className="label" htmlFor="description">Brief Overall Description of Trip/Activity:</label>
-        <input className="input col-12 mb0" id="description" value={description} />
+        <input className="input col-12 mb0" id="description" defaultValue={description} />
       </p>
       <div className="flex mxn1">
         <div className="col-6 px1">
           <label className="label" htmlFor="start-date">Trip/Activity Start Date:</label>
-          <input className="input col-12 mb0" id="start-date" value={formatDate(startDate)} />
+          <input className="input col-12 mb0" id="start-date" defaultValue={formatDate(startDate)} />
         </div>
         <div className="col-6 px1">
           <label className="label" htmlFor="end-date">Trip/Activity End Date:</label>
-          <input className="input col-12 mb0" id="end-date" value={formatDate(endDate)} />
+          <input className="input col-12 mb0" id="end-date" defaultValue={formatDate(endDate)} />
         </div>
       </div>
-      <p>
-        <label className="label" htmlFor="submission-date">Form Submission Date:</label>
-        <input className="input col-12 mb0" id="submission-date" value={formatDate(submissionDate)} />
-      </p>
     </div>
     <div className="col-6 px1">
       <p>
         <label className="label" htmlFor="team-list">Team List (If Applicable):</label>
-        <input className="input col-12 mb0" id="team-list" value={teamList} />
+        <input className="input col-12 mb0" id="team-list" defaultValue={teamList} />
       </p>
       <p>
         <label className="label" htmlFor="client-name">Client Name (If Applicable):</label>
-        <input className="input col-12 mb0" id="client-name" value={clientName} />
+        <input className="input col-12 mb0" id="client-name" defaultValue={clientName} />
       </p>
       <p>
         <label className="label" htmlFor="project-name">Project Name (If Applicable):</label>
-        <input className="input col-12 mb0" id="project-name" value={projectName} />
+        <input className="input col-12 mb0" id="project-name" defaultValue={projectName} />
       </p>
       <div className="flex mxn1">
         <div className="col-6 px1">
           <label className="label" htmlFor="account-code">Account Code:</label>
-          <select className="select col-12 mb0" id="account-code" value={accountCode}>
+          <select className="select col-12 mb0" id="account-code" defaultValue={accountCode}>
             <option value="6400">6400 - Charge Client</option>
             <option value="6450">6450 - Trips Internal</option>
             <option value="7351">7351 - UX Practice</option>
@@ -53,7 +53,7 @@ export default ({ name = "Chris Price", teamList = '', startDate = new Date(2017
         </div>
         <div className="col-6 px1">
           <label className="label" htmlFor="office-code">Office Code:</label>
-          <select className="select col-12 mb0" id="office-code" value={officeCode}>
+          <select className="select col-12 mb0" id="office-code" defaultValue={officeCode}>
             <option value="001">001 - Newcastle</option>
             <option value="002">002 - Edinburgh</option>
             <option value="003">003 - London</option>

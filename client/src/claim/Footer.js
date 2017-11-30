@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default () => <div className="flex justify-between mxn1">
+export default () => <div className="flex justify-between mxn1 mt2">
   <div className="col-6 px1">
     <p>I certify that these expenses were necessarily incurred</p>
     <div className="flex mxn1">

@@ -1,9 +1,15 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { fetchTransactions } from '../monzo';
+import Loading from '../chrome/Loading';
 import ms from 'ms';
 
-const mapStateToProps = ({ claims, since }) => ({ claims, since });
+const mapStateToProps = ({ claims, since, loading }) =>
+  ({
+    claims,
+    since,
+    loading: claims == null || loading.length > 0
+  });
 
 const mapDispatchToProps = { fetchTransactions };
 
@@ -28,7 +34,7 @@ export default WrappedComponent => {
     render() {
       const { claims, since, loading, ...other } = this.props
       return loading ?
-        <b>loading</b> :
+        <Loading /> :
         <WrappedComponent
           claims={claims}
           since={since}
