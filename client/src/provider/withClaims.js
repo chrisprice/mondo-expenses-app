@@ -4,9 +4,11 @@ import { fetchTransactions } from '../monzo';
 import Loading from '../chrome/Loading';
 import ms from 'ms';
 
-const mapStateToProps = ({ claims, since, loading }) =>
+const mapStateToProps = ({ accounts, claims, expenses, since, loading }) =>
   ({
+    accounts,
     claims,
+    expenses,
     since,
     loading: claims == null || loading.length > 0
   });
@@ -32,11 +34,13 @@ export default WrappedComponent => {
     }
 
     render() {
-      const { claims, since, loading, ...other } = this.props
+      const { accounts, claims, expenses, since, loading, ...other } = this.props
       return loading ?
         <Loading /> :
         <WrappedComponent
+          accounts={accounts}
           claims={claims}
+          expenses={expenses}
           since={since}
           loadMore={() => this.loadMore()}
           {...other}

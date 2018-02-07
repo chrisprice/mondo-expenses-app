@@ -61,7 +61,7 @@ const phrases = [
 ];
 
 const Loading = ({ tick }) =>
-  <div className="loading">
+  <div className="loading overflow-hidden">
     <MonzoIcon />
     <MonzoIcon />
     <MonzoIcon />

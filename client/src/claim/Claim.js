@@ -1,22 +1,19 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import Header from './Header';
 import Metadata from './Metadata';
 import LineItem from './LineItem';
 import Footer from './Footer';
 import Receipt from './Receipt';
-import { clearAuth } from '../other';
 import { formatAmount } from './format';
 import withClaims from '../provider/withClaims';
 import './claim.css';
 
-export const ClaimNotFound = () => <div>claim not found</div>;
-
-export const Claim = ({ claim: { transactions }, total }) =>
+export const Claim = ({ id, name, transactions, total, excludeTransaction }) =>
   <section>
     <Header />
-    {/* <Metadata /> pass values in here */}
+    <Metadata name={name} startDate={transactions[0].created} endDate={transactions[transactions.length - 1].created} />
     <div className="">
       <table className="table col-12">
         <tbody>
@@ -37,8 +34,7 @@ export const Claim = ({ claim: { transactions }, total }) =>
                 {...transaction}
                 key={transaction.id}
                 index={index}
-                excludeDisabled={index === 0}
-                onExclude={() => alert(transaction.id)}
+                onExclude={() => excludeTransaction(transaction.id)}
               />
             )
           }
@@ -47,7 +43,7 @@ export const Claim = ({ claim: { transactions }, total }) =>
               Total
             </td>
             <td colSpan="2">
-              <input className="input col-12 mb0 right-align" disabled defaultValue={formatAmount('GBP', total)} />
+              <input className="input col-12 mb0 right-align" disabled value={formatAmount('GBP', total)} />
             </td>
           </tr>
         </tbody>
@@ -67,16 +63,18 @@ export const Claim = ({ claim: { transactions }, total }) =>
     }
   </section>;
 
-const MaybeClaim = props =>
-  props.claim != null ? <Claim {...props} /> : <ClaimNotFound />;
-
-export default withClaims(connect(
-  (props, { match: { params: { id } }, claims = [] }) => {
-    const claim = claims.find(claim => id === claim.id);
+export default withClaims(withRouter(connect(
+  (state, { match: { params: { id } }, accounts, claims, expenses, history }) => {
+    const transactionIds = id.split(',');
+    const transactions = expenses.filter(({ id }) => transactionIds.includes(id));
     return ({
-      claim,
-      total: claim != null ? claim.transactions.reduce((total, { amount }) => total + amount, 0) : 0
-    })
-  },
-  { clearAuth }
-)(MaybeClaim));
+      id,
+      name: accounts[0].description,
+      transactions,
+      total: transactions.reduce((total, { amount }) => total + amount, 0),
+      excludeTransaction: (transactionId) => {
+        history.push(`/claim/${id.split(',').filter(id => id !== transactionId).join(',')}`);
+      }
+    });
+  }
+)(Claim)));

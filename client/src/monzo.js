@@ -1,5 +1,5 @@
 import MonzoApi from 'monzo-api';
-import { promiseWrapper, startOfMonth } from './util';
+import { promiseWrapper } from './util';
 
 const PAGE_LIMIT = 100;
 
@@ -19,6 +19,9 @@ export const ACCOUNTS_ERROR = 'ACCOUNTS_ERROR';
 export const FETCH_TRANSACTIONS = 'FETCH_TRANSACTIONS';
 export const TRANSACTIONS_COMPLETE = 'TRANSACTIONS_COMPLETE';
 export const TRANSACTIONS_ERROR = 'TRANSACTIONS_ERROR';
+export const ANNOTATE_TRANSACTIONS = 'ANNOTATE_TRANSACTIONS';
+export const ANNOTATE_COMPLETE = 'ANNOTATE_COMPLETE';
+export const ANNOTATE_ERROR = 'ANNOTATE_ERROR';
 
 
 export const performAuth = () =>
@@ -49,27 +52,27 @@ export const authCallback = ({ code, state }) =>
   });
 
 const fetchAccounts = async (dispatch, getState) => {
-    const { accessToken, accounts } = getState();
-    if (accounts != null) {
-      return accounts;
-    }
+  const { accessToken, accounts } = getState();
+  if (accounts != null) {
+    return accounts;
+  }
+  dispatch({
+    type: FETCH_ACCOUNTS
+  });
+  try {
+    const { accounts } = await monzo.accounts(accessToken);
     dispatch({
-      type: FETCH_ACCOUNTS
+      type: ACCOUNTS_COMPLETE,
+      accounts
     });
-    try {
-      const { accounts } = await monzo.accounts(accessToken);
-      dispatch({
-        type: ACCOUNTS_COMPLETE,
-        accounts
-      });
-      return accounts;
-    } catch (e) {
-      dispatch({
-        type: ACCOUNTS_ERROR
-      });
-      throw e;
-    }
-  };
+    return accounts;
+  } catch (e) {
+    dispatch({
+      type: ACCOUNTS_ERROR
+    });
+    throw e;
+  }
+};
 
 export const fetchPagedTransactions = async ({
   limit = PAGE_LIMIT,
@@ -125,4 +128,28 @@ export const fetchTransactions = (since) =>
       since: since.toISOString(),
       transactions: transactions.concat(previousTransactions)
     });
+  });
+
+export const annotateTransactions = (transactionIds, metadata) =>
+  promiseWrapper(async (dispatch, getState) => {
+    const {
+      accessToken
+    } = getState();
+    dispatch({
+      type: ANNOTATE_TRANSACTIONS
+    });
+    try {
+      for (const transactionId of transactionIds) {
+        await monzo.annotate(transactionId, metadata, accessToken);
+      }
+      dispatch({
+        type: ANNOTATE_COMPLETE
+      });
+    }
+    catch (e) {
+      dispatch({
+        type: ANNOTATE_ERROR
+      });
+      throw e;
+    }
   })

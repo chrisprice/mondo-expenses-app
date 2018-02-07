@@ -7,7 +7,7 @@ import {
   ACCOUNTS_ERROR,
   FETCH_TRANSACTIONS,
   TRANSACTIONS_COMPLETE,
-  TRANSACTIONS_ERROR
+  TRANSACTIONS_ERROR,
 } from './monzo';
 import {
   CLEAR_AUTH
@@ -36,7 +36,6 @@ export const saveState = ({ accessToken, stateToken }) => {
 };
 
 export default (state, action) => {
-  console.log(state, action);
   switch (action.type) {
     case PERFORM_AUTH: {
       const { stateToken } = action;
@@ -130,6 +129,6 @@ export default (state, action) => {
       };
     }
     default:
-    return state;
+      return state;
   }
 };

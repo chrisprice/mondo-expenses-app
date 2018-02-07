@@ -42,13 +42,10 @@ export default function* (sortedTransactions) {
       tx => tx.address.region,
       tx => tx.address.city
     );
-    const { emoji: countryEmoji, name: countryName } = countries[countryCode] || { emoji: '❓', name: 'Unknown' };
+    const { emoji, name: countryName } = countries[countryCode] || { emoji: '❓', name: 'Unknown' };
     yield ({
-      id: transactions[0].id,
-      countryEmoji,
-      countryName,
-      city,
-      region,
+      emoji,
+      description: [city, region, countryName].filter(item => item).join(', '),
       transactions,
       start: transactions[0].created,
       end: transactions[transactions.length - 1].created

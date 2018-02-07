@@ -1,7 +1,7 @@
 import React from 'react';
-import { formatAmount, formatDate } from './format';
+import { formatDate } from './format';
 
-export default ({ name = "Chris Price", teamList = '', startDate = new Date(2017, 8, 10), endDate = new Date(2017, 8, 13), submissionDate = new Date, description = '', clientName = '', projectName = '', accountCode = 4, officeCode = 3 }) =>
+export default ({ name = "Chris Price", teamList = '', startDate = new Date(), endDate = new Date(), submissionDate = new Date(), description = '', clientName = '', projectName = '', accountCode = 4, officeCode = 3 }) =>
   <div className="flex justify-between mxn1">
     <div className="col-6 px1">
       <p>

@@ -21,5 +21,5 @@ export default ({ index, merchant, category, created, notes, attachments, curren
   <td><input className="input col-12 mb0 right-align" defaultValue={formatAmount(currency, amount)}/></td>
   <td><input className="input col-12 mb0 right-align" defaultValue={localCurrency != null ? formatAmount(localCurrency, localAmount) : ''} /></td>
   <td><input className="input col-12 mb0" disabled /></td>
-  <td><button className="btn btn-outline" onClick={onExclude} disabled={excludeDisabled}>Exclude</button></td>
+  <td><button className="btn btn-outline" onClick={onExclude}>Exclude</button></td>
 </tr>;

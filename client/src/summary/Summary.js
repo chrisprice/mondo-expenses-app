@@ -16,10 +16,10 @@ const date = date => dateFormat.format(new Date(date));
 const MultipleAccountMessage = () =>
   <p className="italic">Monzo is reporting that you have multiple accounts (check you out!). For now, I've assumed you'd like to pool your transactions across all of these accounts.</p>;
 
-const PendingClaim = ({ id, start, end, city, region, countryName, countryEmoji, transactions }) =>
+const PendingClaim = ({ start, end, description, emoji, transactions }) =>
   <li className="m2">
-    <Link to={`/claim/${id}`} className="text-decoration-none">
-      <span className="inline-block mr2">{countryEmoji}</span>{[city, region, countryName].filter(item => item).join(', ')}
+    <Link to={`/claim/${transactions.map(({ id }) => id).join(',')}`} className="text-decoration-none">
+      <span className="inline-block mr2">{emoji}</span>{description}
     </Link>
     <br />
     <small className="inline-block ml4">{date(start)} - {date(end)}</small>

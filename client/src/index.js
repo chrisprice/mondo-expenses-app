@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
-import { BrowserRouter, Route } from 'react-router-dom';
+import { BrowserRouter, Redirect, Route } from 'react-router-dom';
 import './index.css';
 import 'ace-css/css/ace.min.css';
 import Container from './chrome/Container';
@@ -22,6 +22,7 @@ ReactDOM.render(
       <Container>
         <Route exact path="/" component={App} />
         <Route path="/auth" component={Auth} />
+        <Route exact path="/claim/" component={() => <Redirect to="/"/>} />
         <Route path="/claim/:id" component={Claim} />
         <Route path="/loading" component={Loading} />
       </Container>
